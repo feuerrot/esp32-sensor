@@ -17,7 +17,7 @@ class SCD30:
 	def __init__(self, i2c, address=0x61):
 		self.i2c = i2c
 		self.address = address
-		self.value = []
+		self.value = {}
 
 	def _read(self, location, length):
 		self.i2c.writeto(self.address, location)
@@ -58,12 +58,12 @@ class SCD30:
 		ready_crc = self.check_crc(ready_raw)
 		ready = ustruct.unpack(">H", ready_raw[0:2])[0]
 		if not ready and ready_crc:
-			return None
+			return False
 
 		data_raw = self._read(CMD_READ, 18)
 		data_crc = self.check_crc(data_raw)
 		if not data_crc:
-			return None
+			return False
 
 		self.value["co2"] = ustruct.unpack(">f", data_raw[0:2] + data_raw[3:5])[0]
 		self.value["temperature"] = ustruct.unpack(">f", data_raw[6:8] + data_raw[9:11])[0]
